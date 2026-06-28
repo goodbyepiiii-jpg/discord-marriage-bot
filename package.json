@@ -1,0 +1,15 @@
+{
+  "name": "discord-marriage-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/bot/index.ts",
+    "deploy": "tsx src/bot/deploy-commands.ts"
+  },
+  "dependencies": {
+    "@discordjs/builders": "1.14.1",
+    "@discordjs/rest": "2.4.3",
+    "discord.js": "14.18.0",
+    "tsx": "^4.21.0"
+  }
+}
