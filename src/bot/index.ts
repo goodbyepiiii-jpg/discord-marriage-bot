@@ -18,6 +18,9 @@ import {
   trackRoomExit,
   startChildCareLoop,
 } from "./childSystem.js";
+import { loadData, saveData, startAutoSave } from "./persistence.js";
+
+loadData();
 
 const token = process.env.DISCORD_TOKEN;
 if (!token) {
@@ -36,6 +39,7 @@ const client = new Client({
 client.once(Events.ClientReady, (c) => {
   console.log(`✅ Bot ready! Logged in as ${c.user.tag}`);
   startChildCareLoop(client);
+  startAutoSave(30000);
 });
 
 client.on(Events.MessageCreate, async (message) => {
@@ -92,21 +96,28 @@ client.on(Events.InteractionCreate, async (interaction) => {
   const cmd = interaction as ChatInputCommandInteraction;
   const name = cmd.commandName;
 
+  const saveCmds = new Set([
+    "accept_propose", "reject_propose", "divorce",
+    "name_child", "feed", "sleep_baby", "comfort", "play", "heal", "future",
+  ]);
+
   try {
-    if (name === "propose") return await marry.execute(cmd);
-    if (name === "accept_propose") return await marry.acceptExecute(cmd);
-    if (name === "reject_propose") return await marry.rejectExecute(cmd);
-    if (name === "rename_room") return await room.renameExecute(cmd);
-    if (name === "divorce") return await room.divorceExecute(cmd);
-    if (name === "marriage_status") return await room.statusExecute(cmd);
-    if (name === "children") return await children.childrenExecute(cmd);
-    if (name === "feed") return await children.feedExecute(cmd);
-    if (name === "sleep_baby") return await children.sleepBabyExecute(cmd);
-    if (name === "comfort") return await children.comfortExecute(cmd);
-    if (name === "play") return await children.playExecute(cmd);
-    if (name === "heal") return await children.healExecute(cmd);
-    if (name === "future") return await children.futureExecute(cmd);
-    if (name === "name_child") return await nameChild.execute(cmd);
+    if (name === "propose") await marry.execute(cmd);
+    else if (name === "accept_propose") await marry.acceptExecute(cmd);
+    else if (name === "reject_propose") await marry.rejectExecute(cmd);
+    else if (name === "rename_room") await room.renameExecute(cmd);
+    else if (name === "divorce") await room.divorceExecute(cmd);
+    else if (name === "marriage_status") await room.statusExecute(cmd);
+    else if (name === "children") await children.childrenExecute(cmd);
+    else if (name === "feed") await children.feedExecute(cmd);
+    else if (name === "sleep_baby") await children.sleepBabyExecute(cmd);
+    else if (name === "comfort") await children.comfortExecute(cmd);
+    else if (name === "play") await children.playExecute(cmd);
+    else if (name === "heal") await children.healExecute(cmd);
+    else if (name === "future") await children.futureExecute(cmd);
+    else if (name === "name_child") await nameChild.execute(cmd);
+
+    if (saveCmds.has(name)) saveData();
   } catch (err) {
     console.error(`Error in /${name}:`, err);
     const msg = { content: "❌ Có lỗi xảy ra! Vui lòng thử lại.", ephemeral: true };
